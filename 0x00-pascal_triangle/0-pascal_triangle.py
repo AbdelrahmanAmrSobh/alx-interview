@@ -4,7 +4,7 @@ Module with Pascal_triangle method that creates a pascal triangle of size `n`
 """
 
 
-def pascal_triangle(n: int) -> list[list]:
+def pascal_triangle(n):
     """
     Method used to create and return a pascal triangle of size `n`.
 
