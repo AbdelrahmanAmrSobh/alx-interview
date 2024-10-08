@@ -1,5 +1,6 @@
 #!/usr/bin/python3
-"""Module with canUnlockAll method that check if we can unlock each box in list of boxes.
+"""Module with canUnlockAll method that check
+if we can unlock each box in list of boxes.
 
 First box in list is always unlocked and can hold keys for boxes.
 """
