@@ -1,41 +1,49 @@
 #!/usr/bin/python3
-"""Module to get stats."""
+"""
+log parsing
+"""
 import sys
+import re
 
 
-def print_stats(stats, filesize):
-    """Helper method that handles printing stats in required format."""
-    stats = dict(sorted(stats.items(), key=lambda item: item[1], reverse=True))
-    print(f"File size: {filesize}")
-    for k, v in stats.items():
-        if v == 0:
-            break
-        print(f"{k}: {v}")
+def output(log: dict) -> None:
+    """
+    helper function to display stats
+    """
+    print("File size: {}".format(log["file_size"]))
+    for code in sorted(log["code_frequency"]):
+        if log["code_frequency"][code]:
+            print("{}: {}".format(code, log["code_frequency"][code]))
 
 
 if __name__ == "__main__":
-    status_codes = {
-        200: 0,
-        301: 0,
-        400: 0,
-        401: 0,
-        403: 0,
-        404: 0,
-        405: 0,
-        500: 0
-    }
-    total_size = 0
+    regex = re.compile(
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3} - \[\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.\d+\] "GET /projects/260 HTTP/1.1" (.{3}) (\d+)')  # nopep8
+
     line_count = 0
-    for line in sys.stdin:
-        line_count = line_count + 1
-        status_code, file_size = line.split()[-2:]
-        try:
-            status_code, file_size = int(status_code), int(file_size)
-        except TypeError:
-            continue
-        total_size = total_size + file_size
-        status_codes[status_code] = status_codes.get(status_code, 0) + 1
-        if line_count % 10 == 0:
-            print_stats(status_codes, total_size)
-    if line_count % 10 > 0:
-        print_stats(status_codes, total_size)
+    log = {}
+    log["file_size"] = 0
+    log["code_frequency"] = {
+        str(code): 0 for code in [
+            200, 301, 400, 401, 403, 404, 405, 500]}
+
+    try:
+        for line in sys.stdin:
+            line = line.strip()
+            match = regex.fullmatch(line)
+            if (match):
+                line_count += 1
+                code = match.group(1)
+                file_size = int(match.group(2))
+
+                # File size
+                log["file_size"] += file_size
+
+                # status code
+                if (code.isdecimal()):
+                    log["code_frequency"][code] += 1
+
+                if (line_count % 10 == 0):
+                    output(log)
+    finally:
+        output(log)
